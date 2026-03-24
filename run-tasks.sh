@@ -133,7 +133,7 @@ for task_entry in "${TASKS[@]}"; do
   echo ""
 
   # --- Run claude -p ---
-  if ! claude -p "You have a CLAUDE.md file in the project root with full project context — read it first. Then read and execute ALL instructions in the file: $task_file"; then
+  if ! claude -p --dangerously-skip-permissions "You have a CLAUDE.md file in the project root with full project context — read it first. Then read and execute ALL instructions in the file: $task_file"; then
     echo ""
     echo "ERROR $display — claude -p exited with non-zero status"
     FAILED="$display (claude -p failed)"
