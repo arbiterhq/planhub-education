@@ -19,4 +19,15 @@ export interface Invoice {
   notes: string | null;
   company?: Company;
   contract?: Contract;
+  project?: { id: number; name: string };
+}
+
+export interface InvoiceSummary {
+  total_outstanding: number;
+  pending_review: number;
+  approved_unpaid: number;
+  paid_this_month: number;
+  paid_all_time: number;
+  total_invoiced: number;
+  by_status: Record<InvoiceStatus, number>;
 }

@@ -24,6 +24,10 @@ class InvoiceResource extends JsonResource
             'notes' => $this->notes,
             'company' => new CompanyResource($this->whenLoaded('company')),
             'contract' => new ContractResource($this->whenLoaded('contract')),
+            'project' => $this->when(
+                $this->relationLoaded('project'),
+                fn() => ['id' => $this->project->id, 'name' => $this->project->name]
+            ),
         ];
     }
 }

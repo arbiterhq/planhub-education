@@ -14,6 +14,8 @@ export interface Contract {
   start_date: string | null;
   end_date: string | null;
   signed_at: string | null;
-  company?: Company;
-  trade?: Trade;
+  company?: Company | { id: number; name: string };
+  trade?: Trade | { id: number; name: string };
+  project?: { id: number; name: string };
+  already_invoiced?: number;
 }
