@@ -21,6 +21,13 @@ class ContractResource extends JsonResource
             'signed_at' => $this->signed_at,
             'company' => new CompanyResource($this->whenLoaded('company')),
             'trade' => new TradeResource($this->whenLoaded('trade')),
+            'project' => $this->when(
+                $this->relationLoaded('project'),
+                fn() => [
+                    'id' => $this->project->id,
+                    'name' => $this->project->name,
+                ]
+            ),
         ];
     }
 }

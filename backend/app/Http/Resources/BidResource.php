@@ -21,6 +21,20 @@ class BidResource extends JsonResource
             'reviewed_at' => $this->reviewed_at,
             'notes' => $this->notes,
             'company' => new CompanyResource($this->whenLoaded('company')),
+            'project_scope' => $this->when(
+                $this->relationLoaded('projectScope'),
+                fn() => [
+                    'id' => $this->projectScope->id,
+                    'project' => $this->projectScope->relationLoaded('project') ? [
+                        'id' => $this->projectScope->project->id,
+                        'name' => $this->projectScope->project->name,
+                    ] : null,
+                    'trade' => $this->projectScope->relationLoaded('trade') ? [
+                        'id' => $this->projectScope->trade->id,
+                        'name' => $this->projectScope->trade->name,
+                    ] : null,
+                ]
+            ),
         ];
     }
 }

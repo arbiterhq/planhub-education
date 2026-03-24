@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectScopeController;
+use App\Http\Controllers\SubcontractorController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +15,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('projects', ProjectController::class);
     Route::apiResource('projects.scopes', ProjectScopeController::class)->only(['store', 'update', 'destroy']);
     Route::get('trades', [TradeController::class, 'index']);
+    Route::apiResource('subcontractors', SubcontractorController::class)->except(['destroy']);
 });

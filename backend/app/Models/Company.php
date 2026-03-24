@@ -74,6 +74,11 @@ class Company extends Model
         return $this->hasMany(ActivityLog::class);
     }
 
+    public function activeContracts(): HasMany
+    {
+        return $this->hasMany(Contract::class)->where('status', 'active');
+    }
+
     public function scopeGeneralContractors(Builder $query): Builder
     {
         return $query->where('type', 'general_contractor');
