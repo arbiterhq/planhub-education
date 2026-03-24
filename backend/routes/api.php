@@ -5,6 +5,7 @@ use App\Http\Controllers\BidController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvitationToBidController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectScopeController;
 use App\Http\Controllers\SubcontractorController;
@@ -59,6 +60,16 @@ Route::middleware('auth:sanctum')->group(function () {
             ]),
         ]);
     });
+
+    // Messages
+    Route::get('messages/unread-count', [MessageController::class, 'unreadCount']);
+    Route::get('messages/contacts', [MessageController::class, 'contacts']);
+    Route::get('messages/users', [MessageController::class, 'searchUsers']);
+    Route::get('messages/sent', [MessageController::class, 'sent']);
+    Route::get('messages/thread/{user}', [MessageController::class, 'thread']);
+    Route::get('messages', [MessageController::class, 'inbox']);
+    Route::post('messages', [MessageController::class, 'store']);
+    Route::put('messages/{message}/read', [MessageController::class, 'markRead']);
 
     // Invoices
     Route::get('invoices/summary', [InvoiceController::class, 'summary']);

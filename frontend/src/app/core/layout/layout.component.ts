@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -7,9 +7,11 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 import { AsyncPipe } from '@angular/common';
-import { map, shareReplay } from 'rxjs';
+import { map, shareReplay, interval, Subscription, startWith, switchMap } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { MessageService } from '../services/message.service';
 
 @Component({
   selector: 'app-layout',
@@ -25,6 +27,7 @@ import { AuthService } from '../auth/auth.service';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
+    MatBadgeModule,
   ],
   template: `
     <mat-sidenav-container class="sidenav-container">
@@ -41,7 +44,10 @@ import { AuthService } from '../auth/auth.service';
             <a mat-list-item
                [routerLink]="item.path"
                routerLinkActive="active-nav-item">
-              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <mat-icon matListItemIcon
+                        [matBadge]="item.path === '/messages' && unreadCount() > 0 ? unreadCount() : null"
+                        matBadgeColor="warn"
+                        matBadgeSize="small">{{ item.icon }}</mat-icon>
               <span matListItemTitle>{{ item.label }}</span>
             </a>
           }
@@ -171,8 +177,9 @@ import { AuthService } from '../auth/auth.service';
     }
   `],
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit, OnDestroy {
   private breakpointObserver = inject(BreakpointObserver);
+  private messageService = inject(MessageService);
   authService = inject(AuthService);
   private router = inject(Router);
 
@@ -183,6 +190,9 @@ export class LayoutComponent {
       shareReplay()
     );
 
+  unreadCount = signal(0);
+  private pollSub?: Subscription;
+
   navItems = [
     { path: '/dashboard',      icon: 'dashboard',    label: 'Dashboard' },
     { path: '/projects',       icon: 'business',     label: 'Projects' },
@@ -191,6 +201,17 @@ export class LayoutComponent {
     { path: '/invoices',       icon: 'receipt_long', label: 'Invoices' },
     { path: '/messages',       icon: 'mail',         label: 'Messages' },
   ];
+
+  ngOnInit(): void {
+    this.pollSub = interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.messageService.getUnreadCount())
+    ).subscribe(({ count }) => this.unreadCount.set(count));
+  }
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
 
   logout(): void {
     this.authService.logout().subscribe(() => {
