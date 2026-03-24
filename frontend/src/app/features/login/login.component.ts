@@ -108,7 +108,7 @@ import { AuthService } from '../../core/auth/auth.service';
             </button>
           </form>
 
-          <p class="demo-hint">Demo: admin@apexconstruction.com / password</p>
+          <p class="demo-hint">Demo: admin&#64;apexconstruction.com / password</p>
         </mat-card-content>
       </mat-card>
     </div>

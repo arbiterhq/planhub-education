@@ -80,7 +80,8 @@ interface DashboardData {
       <div class="loading-container">
         <mat-spinner diameter="48"></mat-spinner>
       </div>
-    } @else if (data(); as d) {
+    } @else {
+    @if (data(); as d) {
       <!-- KPI Cards -->
       <div class="kpi-grid">
 
@@ -221,6 +222,7 @@ interface DashboardData {
         </mat-card>
 
       </div>
+    }
     }
   `,
   styles: [`
