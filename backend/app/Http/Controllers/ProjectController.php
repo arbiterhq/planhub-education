@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -67,6 +68,8 @@ class ProjectController extends Controller
             'status' => $request->input('status', 'planning'),
         ]);
 
+        ActivityLogger::log('project_created', "Created project \"{$project->name}\"", $project->id);
+
         return new ProjectResource($project->fresh());
     }
 
@@ -76,7 +79,10 @@ class ProjectController extends Controller
             abort(403);
         }
 
+        $changes = array_keys($request->validated());
         $project->update($request->validated());
+
+        ActivityLogger::log('project_updated', "Updated project \"{$project->name}\"", $project->id, ['changes' => $changes]);
 
         return new ProjectResource($project->fresh());
     }

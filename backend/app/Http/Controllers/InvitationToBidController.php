@@ -6,6 +6,7 @@ use App\Http\Resources\InvitationToBidResource;
 use App\Models\Company;
 use App\Models\InvitationToBid;
 use App\Models\ProjectScope;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class InvitationToBidController extends Controller
@@ -74,6 +75,12 @@ class InvitationToBidController extends Controller
 
         $invitation->load(['projectScope.project', 'projectScope.trade', 'company', 'bid']);
 
+        ActivityLogger::log(
+            'itb_sent',
+            "Sent invitation to bid to {$subcontractor->name} for {$invitation->projectScope->trade->name} on {$invitation->projectScope->project->name}",
+            $invitation->projectScope->project_id
+        );
+
         return new InvitationToBidResource($invitation);
     }
 
@@ -124,8 +131,18 @@ class InvitationToBidController extends Controller
             ->with(['projectScope.project', 'projectScope.trade', 'company', 'bid'])
             ->get();
 
+        $count = count($created);
+        if ($count > 0) {
+            $scope->load('trade', 'project');
+            ActivityLogger::log(
+                'itb_bulk_sent',
+                "Sent {$count} invitations to bid for {$scope->trade->name} on {$scope->project->name}",
+                $scope->project_id
+            );
+        }
+
         return response()->json([
-            'created_count' => count($created),
+            'created_count' => $count,
             'skipped_count' => count($existingCompanyIds),
             'data' => InvitationToBidResource::collection($invitations),
         ], 201);

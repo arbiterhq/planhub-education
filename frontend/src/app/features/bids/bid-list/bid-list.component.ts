@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Subject, combineLatest, startWith, takeUntil } from 'rxjs';
@@ -28,6 +28,7 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
   selector: 'app-bid-list',
   standalone: true,
   imports: [
+    RouterLink,
     ReactiveFormsModule,
     CurrencyPipe,
     DatePipe,
@@ -96,7 +97,11 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
                 <ng-container matColumnDef="project">
                   <th mat-header-cell *matHeaderCellDef>Project</th>
                   <td mat-cell *matCellDef="let row">
-                    {{ row.project_scope?.project?.name ?? '—' }}
+                    @if (row.project_scope?.project) {
+                      <a class="entity-link" [routerLink]="'/projects/' + row.project_scope.project.id">
+                        {{ row.project_scope.project.name }}
+                      </a>
+                    } @else { — }
                   </td>
                 </ng-container>
 
@@ -109,7 +114,11 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
 
                 <ng-container matColumnDef="subcontractor">
                   <th mat-header-cell *matHeaderCellDef>Subcontractor</th>
-                  <td mat-cell *matCellDef="let row">{{ row.company?.name ?? '—' }}</td>
+                  <td mat-cell *matCellDef="let row">
+                    @if (row.company) {
+                      <a class="entity-link" [routerLink]="'/subcontractors/' + row.company.id">{{ row.company.name }}</a>
+                    } @else { — }
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="status">
@@ -185,7 +194,11 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
                 <ng-container matColumnDef="project">
                   <th mat-header-cell *matHeaderCellDef>Project</th>
                   <td mat-cell *matCellDef="let row">
-                    {{ getBidProjectName(row) }}
+                    @if (getBidProjectId(row)) {
+                      <a class="entity-link" [routerLink]="'/projects/' + getBidProjectId(row)">
+                        {{ getBidProjectName(row) }}
+                      </a>
+                    } @else { — }
                   </td>
                 </ng-container>
 
@@ -198,7 +211,11 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
 
                 <ng-container matColumnDef="subcontractor">
                   <th mat-header-cell *matHeaderCellDef>Subcontractor</th>
-                  <td mat-cell *matCellDef="let row">{{ row.company?.name ?? '—' }}</td>
+                  <td mat-cell *matCellDef="let row">
+                    @if (row.company) {
+                      <a class="entity-link" [routerLink]="'/subcontractors/' + row.company.id">{{ row.company.name }}</a>
+                    } @else { — }
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="amount">
@@ -315,6 +332,12 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
     .amount-cell { font-weight: 500; }
 
     .no-data-row td { padding: 32px; text-align: center; color: rgba(0,0,0,0.4); }
+
+    .entity-link {
+      color: #1976d2;
+      text-decoration: none;
+    }
+    .entity-link:hover { text-decoration: underline; }
 
     /* ITB status chips */
     .status-chip { font-size: 12px; }
@@ -469,6 +492,11 @@ export class BidListComponent implements OnInit, OnDestroy {
     }).afterClosed().subscribe(created => {
       if (created) this.loadBids();
     });
+  }
+
+  getBidProjectId(bid: Bid): number | null {
+    const scope = (bid as any).project_scope;
+    return scope?.project?.id ?? null;
   }
 
   getBidProjectName(bid: Bid): string {

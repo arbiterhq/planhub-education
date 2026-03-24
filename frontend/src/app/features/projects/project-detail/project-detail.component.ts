@@ -16,6 +16,7 @@ import { Contract } from '../../../shared/models/contract.model';
 import { Invoice } from '../../../shared/models/invoice.model';
 import { Project, ProjectScope } from '../../../shared/models/project.model';
 import { getStatusLabel } from '../../../shared/utils/status.utils';
+import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 import { ProjectFormDialogComponent } from '../project-form-dialog/project-form-dialog.component';
 import { ProjectScopeDialogComponent, ScopeDialogData } from '../project-scope-dialog/project-scope-dialog.component';
 
@@ -39,6 +40,7 @@ interface BidRow extends Bid {
     MatProgressSpinnerModule,
     MatTableModule,
     MatTabsModule,
+    BreadcrumbComponent,
   ],
   template: `
     <div class="detail-container">
@@ -47,6 +49,7 @@ interface BidRow extends Bid {
           <mat-spinner diameter="48"></mat-spinner>
         </div>
       } @else if (project()) {
+        <app-breadcrumb [items]="[{ label: 'Projects', link: '/projects' }, { label: project()!.name }]"></app-breadcrumb>
         <!-- Header -->
         <div class="project-header">
           <button mat-button routerLink="/projects" class="back-btn">
@@ -219,7 +222,11 @@ interface BidRow extends Bid {
 
                 <ng-container matColumnDef="company">
                   <mat-header-cell *matHeaderCellDef>Subcontractor</mat-header-cell>
-                  <mat-cell *matCellDef="let b">{{ b.company?.name || '—' }}</mat-cell>
+                  <mat-cell *matCellDef="let b">
+                    @if (b.company) {
+                      <a class="entity-link" [routerLink]="'/subcontractors/' + b.company.id">{{ b.company.name }}</a>
+                    } @else { — }
+                  </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="amount">
@@ -262,7 +269,11 @@ interface BidRow extends Bid {
               <mat-table [dataSource]="project()!.contracts || []" class="mat-elevation-z2">
                 <ng-container matColumnDef="company">
                   <mat-header-cell *matHeaderCellDef>Subcontractor</mat-header-cell>
-                  <mat-cell *matCellDef="let c">{{ c.company?.name || '—' }}</mat-cell>
+                  <mat-cell *matCellDef="let c">
+                    @if (c.company) {
+                      <a class="entity-link" [routerLink]="'/subcontractors/' + c.company.id">{{ c.company.name }}</a>
+                    } @else { — }
+                  </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="trade">
@@ -313,7 +324,11 @@ interface BidRow extends Bid {
 
                 <ng-container matColumnDef="company">
                   <mat-header-cell *matHeaderCellDef>Subcontractor</mat-header-cell>
-                  <mat-cell *matCellDef="let i">{{ i.company?.name || '—' }}</mat-cell>
+                  <mat-cell *matCellDef="let i">
+                    @if (i.company) {
+                      <a class="entity-link" [routerLink]="'/subcontractors/' + i.company.id">{{ i.company.name }}</a>
+                    } @else { — }
+                  </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="amount">
@@ -403,6 +418,12 @@ interface BidRow extends Bid {
     .description-cell { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     mat-table { width: 100%; }
+
+    .entity-link {
+      color: #1976d2;
+      text-decoration: none;
+    }
+    .entity-link:hover { text-decoration: underline; }
 
     /* Status chip colors — project statuses */
     :host ::ng-deep .status-chip.status-planning   { background-color: #9e9e9e !important; color: #fff !important; }

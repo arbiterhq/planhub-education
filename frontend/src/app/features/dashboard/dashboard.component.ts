@@ -398,15 +398,18 @@ export class DashboardComponent implements OnInit {
 
   getActivityIcon(action: string): string {
     const map: Record<string, string> = {
-      bid_submitted:    'gavel',
-      bid_accepted:     'check_circle',
-      bid_rejected:     'cancel',
+      project_created:   'add_business',
+      project_updated:   'edit',
+      itb_sent:          'send',
+      itb_bulk_sent:     'send',
+      bid_submitted:     'gavel',
+      bid_accepted:      'check_circle',
+      bid_rejected:      'cancel',
       invoice_submitted: 'receipt_long',
-      invoice_paid:     'payments',
-      message_sent:     'mail',
-      project_created:  'business',
-      contract_signed:  'description',
-      scope_added:      'add_circle',
+      invoice_approved:  'thumb_up',
+      invoice_rejected:  'thumb_down',
+      invoice_paid:      'paid',
+      message_sent:      'mail',
     };
     return map[action] ?? 'info';
   }

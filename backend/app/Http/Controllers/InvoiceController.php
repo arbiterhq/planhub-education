@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Contract;
 use App\Models\Invoice;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
@@ -165,6 +166,13 @@ class InvoiceController extends Controller
 
         $invoice->load(['company', 'project', 'contract.trade']);
 
+        $amount = number_format($invoice->amount, 2);
+        ActivityLogger::log(
+            'invoice_submitted',
+            "Invoice {$invoice->invoice_number} submitted by {$invoice->company->name} for \${$amount}",
+            $invoice->project_id
+        );
+
         return (new InvoiceResource($invoice))->response()->setStatusCode(201);
     }
 
@@ -200,6 +208,21 @@ class InvoiceController extends Controller
 
         $invoice->load(['company', 'project', 'contract.trade']);
 
+        $amount = number_format($invoice->amount, 2);
+        if ($validated['action'] === 'approve') {
+            ActivityLogger::log(
+                'invoice_approved',
+                "Approved invoice {$invoice->invoice_number} for \${$amount}",
+                $invoice->project_id
+            );
+        } else {
+            ActivityLogger::log(
+                'invoice_rejected',
+                "Rejected invoice {$invoice->invoice_number}",
+                $invoice->project_id
+            );
+        }
+
         return new InvoiceResource($invoice);
     }
 
@@ -221,6 +244,13 @@ class InvoiceController extends Controller
         ]);
 
         $invoice->load(['company', 'project', 'contract.trade']);
+
+        $amount = number_format($invoice->amount, 2);
+        ActivityLogger::log(
+            'invoice_paid',
+            "Marked invoice {$invoice->invoice_number} as paid (\${$amount})",
+            $invoice->project_id
+        );
 
         return new InvoiceResource($invoice);
     }

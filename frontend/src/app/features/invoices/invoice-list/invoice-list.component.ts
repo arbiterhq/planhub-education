@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Subject, combineLatest, startWith, takeUntil } from 'rxjs';
@@ -76,6 +77,7 @@ export class RejectInvoiceInlineDialogComponent {
   selector: 'app-invoice-list',
   standalone: true,
   imports: [
+    RouterLink,
     ReactiveFormsModule,
     CurrencyPipe,
     DatePipe,
@@ -202,12 +204,20 @@ export class RejectInvoiceInlineDialogComponent {
 
           <ng-container matColumnDef="project">
             <th mat-header-cell *matHeaderCellDef>Project</th>
-            <td mat-cell *matCellDef="let row">{{ row.project?.name ?? '—' }}</td>
+            <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()">
+              @if (row.project) {
+                <a class="entity-link" [routerLink]="'/projects/' + row.project.id">{{ row.project.name }}</a>
+              } @else { — }
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="subcontractor">
             <th mat-header-cell *matHeaderCellDef>Subcontractor</th>
-            <td mat-cell *matCellDef="let row">{{ row.company?.name ?? '—' }}</td>
+            <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()">
+              @if (row.company) {
+                <a class="entity-link" [routerLink]="'/subcontractors/' + row.company.id">{{ row.company.name }}</a>
+              } @else { — }
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="amount">
@@ -370,6 +380,12 @@ export class RejectInvoiceInlineDialogComponent {
       text-underline-offset: 2px;
     }
     .invoice-number-link:hover { color: #1565c0; }
+
+    .entity-link {
+      color: #1976d2;
+      text-decoration: none;
+    }
+    .entity-link:hover { text-decoration: underline; }
 
     .amount-cell { font-weight: 500; }
 

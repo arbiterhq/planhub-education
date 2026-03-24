@@ -6,6 +6,7 @@ use App\Http\Resources\BidResource;
 use App\Models\Bid;
 use App\Models\Contract;
 use App\Models\InvitationToBid;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class BidController extends Controller
@@ -91,6 +92,13 @@ class BidController extends Controller
 
         $bid->load(['company', 'projectScope.project', 'projectScope.trade', 'contract']);
 
+        $amount = number_format($bid->amount, 2);
+        ActivityLogger::log(
+            'bid_submitted',
+            "{$bid->company->name} submitted a bid of \${$amount} for {$bid->projectScope->trade->name} on {$bid->projectScope->project->name}",
+            $bid->projectScope->project_id
+        );
+
         return new BidResource($bid);
     }
 
@@ -128,7 +136,7 @@ class BidController extends Controller
 
             $bid->load('projectScope');
 
-            Contract::create([
+            $contract = Contract::create([
                 'bid_id' => $bid->id,
                 'project_id' => $bid->projectScope->project_id,
                 'company_id' => $bid->company_id,
@@ -150,6 +158,21 @@ class BidController extends Controller
         }
 
         $bid->load(['company', 'projectScope.project', 'projectScope.trade', 'contract']);
+
+        if ($validated['action'] === 'accept') {
+            ActivityLogger::log(
+                'bid_accepted',
+                "Accepted bid from {$bid->company->name} for {$bid->projectScope->trade->name} on {$bid->projectScope->project->name} — contract created",
+                $bid->projectScope->project_id,
+                ['bid_id' => $bid->id, 'contract_id' => $contract->id]
+            );
+        } else {
+            ActivityLogger::log(
+                'bid_rejected',
+                "Rejected bid from {$bid->company->name} for {$bid->projectScope->trade->name} on {$bid->projectScope->project->name}",
+                $bid->projectScope->project_id
+            );
+        }
 
         return new BidResource($bid);
     }

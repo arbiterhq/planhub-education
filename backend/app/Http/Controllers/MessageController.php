@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MessageResource;
 use App\Models\Message;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,6 +75,12 @@ class MessageController extends Controller
         ]);
 
         $message->load(['sender.company', 'recipient.company', 'project']);
+
+        ActivityLogger::log(
+            'message_sent',
+            "Sent message to {$message->recipient->name}: \"{$message->subject}\"",
+            $message->project_id
+        );
 
         return (new MessageResource($message))->response()->setStatusCode(201);
     }

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
+import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,9 +37,11 @@ import { Subcontractor } from '../../../shared/models/subcontractor.model';
     MatSelectModule,
     MatSnackBarModule,
     MatStepperModule,
+    BreadcrumbComponent,
   ],
   template: `
     <div class="page-container">
+      <app-breadcrumb [items]="[{ label: 'Bids', link: '/bids' }, { label: 'Send Invitations' }]"></app-breadcrumb>
       <div class="page-header">
         <button mat-icon-button (click)="goBack()">
           <mat-icon>arrow_back</mat-icon>

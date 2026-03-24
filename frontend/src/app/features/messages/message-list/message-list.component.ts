@@ -9,6 +9,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,6 +30,7 @@ import { ComposeDialogComponent } from '../compose-dialog/compose-dialog.compone
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     FormsModule,
     ReactiveFormsModule,
     MatListModule,
@@ -121,10 +123,11 @@ import { ComposeDialogComponent } from '../compose-dialog/compose-dialog.compone
               @for (msg of thread(); track msg.id) {
                 <div class="message-wrapper" [class.sent]="msg.sender_id === currentUserId()">
                   @if (msg.project) {
-                    <div class="message-project-ref" [class.sent]="msg.sender_id === currentUserId()">
+                    <a class="message-project-ref" [class.sent]="msg.sender_id === currentUserId()"
+                       [routerLink]="'/projects/' + msg.project.id">
                       <mat-icon style="font-size:14px;width:14px;height:14px">business</mat-icon>
                       {{ msg.project.name }}
-                    </div>
+                    </a>
                   }
                   <div class="message-bubble" [class.sent]="msg.sender_id === currentUserId()">
                     <div class="message-body">{{ msg.body }}</div>
@@ -382,12 +385,15 @@ import { ComposeDialogComponent } from '../compose-dialog/compose-dialog.compone
       align-items: center;
       gap: 4px;
       font-size: 11px;
-      color: rgba(0,0,0,0.54);
+      color: #1976d2;
       margin-bottom: 2px;
       padding: 2px 8px;
-      background: rgba(0,0,0,0.05);
+      background: rgba(25,118,210,0.08);
       border-radius: 4px;
+      text-decoration: none;
+      cursor: pointer;
     }
+    .message-project-ref:hover { text-decoration: underline; }
 
     .message-bubble {
       background-color: #f0f0f0;

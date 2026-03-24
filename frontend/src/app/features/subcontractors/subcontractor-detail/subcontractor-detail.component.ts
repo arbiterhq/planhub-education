@@ -12,6 +12,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { SubcontractorService } from '../../../core/services/subcontractor.service';
 import { Subcontractor, SubcontractorBid, SubcontractorContract } from '../../../shared/models/subcontractor.model';
 import { getStatusLabel } from '../../../shared/utils/status.utils';
+import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-subcontractor-detail',
@@ -28,6 +29,7 @@ import { getStatusLabel } from '../../../shared/utils/status.utils';
     MatProgressSpinnerModule,
     MatTableModule,
     MatTabsModule,
+    BreadcrumbComponent,
   ],
   template: `
     <div class="detail-container">
@@ -36,6 +38,7 @@ import { getStatusLabel } from '../../../shared/utils/status.utils';
           <mat-spinner diameter="48"></mat-spinner>
         </div>
       } @else if (sub()) {
+        <app-breadcrumb [items]="[{ label: 'Subcontractors', link: '/subcontractors' }, { label: sub()!.name }]"></app-breadcrumb>
         <!-- Header -->
         <div class="sub-header">
           <button mat-button routerLink="/subcontractors" class="back-btn">
