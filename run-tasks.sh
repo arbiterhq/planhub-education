@@ -34,6 +34,9 @@ TASKS=(
   "13|13-activity-log-integration.md|Activity Log & Cross-Feature Integration"
   "14|14-error-handling-polish.md|Error Handling, Loading States & Polish"
   "15|15-readme-final-verification.md|README & Final Verification"
+  "16|16-security-authorization-fixes.md|Security & Authorization Fixes"
+  "17|17-backend-bug-fixes.md|Backend Bug Fixes & Code Quality"
+  "18|18-frontend-bug-fixes.md|Frontend Bug Fixes & Code Quality"
 )
 
 # --- State tracking ---
@@ -79,7 +82,8 @@ print_summary() {
     echo "  Failed:"
     echo "    ! $FAILED"
   fi
-  remaining=$(( ${#TASKS[@]} - ${#SKIPPED[@]} - ${#COMPLETED[@]} - ([ -n "$FAILED" ] && echo 1 || echo 0) ))
+  failed_count=$([ -n "$FAILED" ] && echo 1 || echo 0)
+  remaining=$(( ${#TASKS[@]} - ${#SKIPPED[@]} - ${#COMPLETED[@]} - failed_count ))
   if [ "$remaining" -gt 0 ] && [ -z "$FAILED" ] && [ "$INTERRUPTED" = true ]; then
     echo ""
     echo "  Remaining: $remaining task(s)"
@@ -133,7 +137,7 @@ for task_entry in "${TASKS[@]}"; do
   echo ""
 
   # --- Run claude -p ---
-  if ! claude -p --dangerously-skip-permissions "You have a CLAUDE.md file in the project root with full project context — read it first. Then read and execute ALL instructions in the file: $task_file"; then
+  if ! claude -p --model claude-opus-4-6 --dangerously-skip-permissions "You have a CLAUDE.md file in the project root with full project context — read it first. Then read and execute ALL instructions in the file: $task_file"; then
     echo ""
     echo "ERROR $display — claude -p exited with non-zero status"
     FAILED="$display (claude -p failed)"

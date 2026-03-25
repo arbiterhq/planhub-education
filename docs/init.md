@@ -118,3 +118,12 @@ Execute these tasks in order. Each links to a detailed file that can be run via 
 
 - [ ] **[Task 15 — README & Final Verification](init/15-readme-final-verification.md)**
   Project README, architecture docs, end-to-end verification.
+
+- [ ] **[Task 16 — Security & Authorization Fixes](init/16-security-authorization-fixes.md)**
+  Fix SQL injection in sort fields, add missing authorization checks, add `under_review` bid action.
+
+- [ ] **[Task 17 — Backend Bug Fixes & Code Quality](init/17-backend-bug-fixes.md)**
+  Fix invoice race condition, ProjectResource count mismatch, N+1 queries, extract FormRequests.
+
+- [ ] **[Task 18 — Frontend Bug Fixes & Code Quality](init/18-frontend-bug-fixes.md)**
+  Fix bid review bug, missing types, CSS duplication, signal reactivity, service consistency.
