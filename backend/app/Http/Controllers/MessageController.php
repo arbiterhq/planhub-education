@@ -44,8 +44,8 @@ class MessageController extends Controller
         $userId = $user->id;
 
         $messages = Message::where(function ($q) use ($me, $userId) {
-            $q->where(['sender_id' => $me, 'recipient_id' => $userId])
-              ->orWhere(['sender_id' => $userId, 'recipient_id' => $me]);
+            $q->where(fn($q2) => $q2->where('sender_id', $me)->where('recipient_id', $userId))
+              ->orWhere(fn($q2) => $q2->where('sender_id', $userId)->where('recipient_id', $me));
         })
             ->with(['sender.company', 'recipient.company', 'project'])
             ->orderBy('created_at', 'asc')
@@ -151,8 +151,8 @@ class MessageController extends Controller
             ->map(function ($user) use ($me) {
                 // Latest message between me and this user
                 $latest = Message::where(function ($q) use ($me, $user) {
-                    $q->where(['sender_id' => $me, 'recipient_id' => $user->id])
-                      ->orWhere(['sender_id' => $user->id, 'recipient_id' => $me]);
+                    $q->where(fn($q2) => $q2->where('sender_id', $me)->where('recipient_id', $user->id))
+                      ->orWhere(fn($q2) => $q2->where('sender_id', $user->id)->where('recipient_id', $me));
                 })
                     ->orderBy('created_at', 'desc')
                     ->first();

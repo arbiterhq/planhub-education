@@ -15,20 +15,29 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+        });
+        $exceptions->render(function (\Illuminate\Validation\ValidationException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'status' => 422,
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+        });
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
             if ($request->expectsJson()) {
                 $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
                 $message = match ($status) {
                     404 => 'Resource not found',
                     403 => 'Forbidden',
-                    422 => 'Validation failed',
                     default => 'Server error',
                 };
-                $payload = ['message' => $message, 'status' => $status];
-                if (method_exists($e, 'errors')) {
-                    $payload['errors'] = $e->errors();
-                }
-                return response()->json($payload, $status);
+                return response()->json(['message' => $message, 'status' => $status], $status);
             }
         });
     })->create();

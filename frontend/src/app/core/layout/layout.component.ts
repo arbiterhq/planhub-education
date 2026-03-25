@@ -49,7 +49,8 @@ import { MessageService } from '../services/message.service';
               <mat-icon matListItemIcon
                         [matBadge]="item.path === '/messages' && unreadCount() > 0 ? unreadCount() : null"
                         matBadgeColor="warn"
-                        matBadgeSize="small">{{ item.icon }}</mat-icon>
+                        matBadgeSize="small"
+                        aria-hidden="false">{{ item.icon }}</mat-icon>
               <span matListItemTitle>{{ item.label }}</span>
             </a>
           }

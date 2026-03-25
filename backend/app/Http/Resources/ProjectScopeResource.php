@@ -11,6 +11,7 @@ class ProjectScopeResource extends JsonResource
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
+            'project' => $this->whenLoaded('project', fn() => ['id' => $this->project->id, 'name' => $this->project->name]),
             'trade_id' => $this->trade_id,
             'trade' => new TradeResource($this->whenLoaded('trade')),
             'description' => $this->description,
