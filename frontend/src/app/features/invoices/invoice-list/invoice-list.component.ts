@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Subject, combineLatest, startWith, takeUntil } from 'rxjs';
@@ -25,6 +26,7 @@ import { Project } from '../../../shared/models/project.model';
 import { Subcontractor } from '../../../shared/models/subcontractor.model';
 import { InvoiceDetailDialogComponent } from '../invoice-detail-dialog/invoice-detail-dialog.component';
 import { CreateInvoiceDialogComponent } from '../create-invoice-dialog/create-invoice-dialog.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 // ── Inline Dialogs ─────────────────────────────────────────────────────────────
 
@@ -95,6 +97,7 @@ export class RejectInvoiceInlineDialogComponent {
     MatSortModule,
     MatTableModule,
     MatTooltipModule,
+    EmptyStateComponent,
   ],
   template: `
     <div class="page-container">
@@ -270,12 +273,15 @@ export class RejectInvoiceInlineDialogComponent {
           <tr mat-header-row *matHeaderRowDef="columns"></tr>
           <tr mat-row *matRowDef="let row; columns: columns;" class="clickable-row" (click)="openDetail(row)"></tr>
 
-          @if (invoices().length === 0) {
-            <tr class="no-data-row">
-              <td [attr.colspan]="columns.length" class="no-data-cell">No invoices found.</td>
-            </tr>
-          }
         </table>
+
+        @if (invoices().length === 0) {
+          <app-empty-state
+            icon="receipt_long"
+            title="No invoices yet"
+            message="Invoices will appear here once subcontractors submit them">
+          </app-empty-state>
+        }
 
         <mat-paginator
           [length]="total()"
@@ -427,6 +433,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   private subcontractorService = inject(SubcontractorService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private title = inject(Title);
 
   // Data
   invoices = signal<Invoice[]>([]);
@@ -454,6 +461,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
+    this.title.setTitle('PlanHub — Invoices');
     this.loadSummary();
 
     this.projectService.getProjects({ per_page: 100 }).subscribe(res => {

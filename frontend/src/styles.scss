@@ -58,3 +58,28 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .badge-info    { background-color: #E3F2FD; color: #1565C0; }
 .badge-error   { background-color: #FFEBEE; color: #C62828; }
 .badge-neutral { background-color: #F5F5F5; color: #616161; }
+
+// Snackbar notification styles
+.success-snackbar .mdc-snackbar__surface {
+  background-color: #2E7D32 !important;
+  color: #fff !important;
+}
+.success-snackbar .mat-mdc-snack-bar-action {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.error-snackbar .mdc-snackbar__surface {
+  background-color: #C62828 !important;
+  color: #fff !important;
+}
+.error-snackbar .mat-mdc-snack-bar-action {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+// Global loading container
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+}

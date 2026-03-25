@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -411,6 +412,7 @@ export class SubcontractorDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private subcontractorService = inject(SubcontractorService);
+  private title = inject(Title);
 
   sub = signal<Subcontractor | null>(null);
   loading = signal(true);
@@ -435,7 +437,11 @@ export class SubcontractorDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.subcontractorService.getSubcontractor(id).subscribe({
-      next: (res) => { this.sub.set(res.data); this.loading.set(false); },
+      next: (res) => {
+        this.sub.set(res.data);
+        this.loading.set(false);
+        this.title.setTitle(`PlanHub — ${res.data.name}`);
+      },
       error: () => { this.loading.set(false); this.router.navigate(['/subcontractors']); },
     });
   }

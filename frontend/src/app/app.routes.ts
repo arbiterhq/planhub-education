@@ -19,7 +19,7 @@ export const routes: Routes = [
       { path: 'invoices', loadComponent: () => import('./features/invoices/invoice-list/invoice-list.component').then(m => m.InvoiceListComponent) },
       { path: 'messages', loadComponent: () => import('./features/messages/message-list/message-list.component').then(m => m.MessageListComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: '**', loadComponent: () => import('./features/not-found/not-found.component').then(m => m.NotFoundComponent) },
     ]
   },
-  { path: '**', redirectTo: 'dashboard' },
 ];

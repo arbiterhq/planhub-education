@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Subject, combineLatest, startWith, takeUntil } from 'rxjs';
@@ -23,6 +24,7 @@ import { InvitationToBid } from '../../../shared/models/invitation.model';
 import { Project } from '../../../shared/models/project.model';
 import { BidReviewDialogComponent } from '../bid-review-dialog/bid-review-dialog.component';
 import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-dialog.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-bid-list',
@@ -44,6 +46,7 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
+    EmptyStateComponent,
   ],
   template: `
     <div class="page-container">
@@ -139,15 +142,15 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
 
                 <tr mat-header-row *matHeaderRowDef="itbColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: itbColumns;"></tr>
-
-                @if (invitations().length === 0) {
-                  <tr class="no-data-row">
-                    <td [attr.colspan]="itbColumns.length" class="no-data-cell">
-                      No invitations found.
-                    </td>
-                  </tr>
-                }
               </table>
+
+              @if (invitations().length === 0) {
+                <app-empty-state
+                  icon="send"
+                  title="No invitations found"
+                  message="Send invitations to subcontractors to get started">
+                </app-empty-state>
+              }
 
               <mat-paginator
                 [length]="itbTotal()"
@@ -261,15 +264,15 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
 
                 <tr mat-header-row *matHeaderRowDef="bidColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: bidColumns;"></tr>
-
-                @if (bids().length === 0) {
-                  <tr class="no-data-row">
-                    <td [attr.colspan]="bidColumns.length" class="no-data-cell">
-                      No bids found.
-                    </td>
-                  </tr>
-                }
               </table>
+
+              @if (bids().length === 0) {
+                <app-empty-state
+                  icon="gavel"
+                  title="No bids received yet"
+                  message="Send invitations to bid to get started">
+                </app-empty-state>
+              }
 
               <mat-paginator
                 [length]="bidTotal()"
@@ -357,6 +360,7 @@ import { SimulateBidDialogComponent } from '../simulate-bid-dialog/simulate-bid-
 })
 export class BidListComponent implements OnInit, OnDestroy {
   readonly router = inject(Router);
+  private title = inject(Title);
   private bidService = inject(BidService);
   private invitationService = inject(InvitationService);
   private projectService = inject(ProjectService);
@@ -396,6 +400,7 @@ export class BidListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
+    this.title.setTitle('PlanHub — Bids');
     this.projectService.getProjects({ per_page: 100 }).subscribe(res => {
       this.projects.set(res.data);
     });

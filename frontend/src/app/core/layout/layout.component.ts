@@ -1,5 +1,7 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -180,6 +182,7 @@ import { MessageService } from '../services/message.service';
 export class LayoutComponent implements OnInit, OnDestroy {
   private breakpointObserver = inject(BreakpointObserver);
   private messageService = inject(MessageService);
+  private dialog = inject(MatDialog);
   authService = inject(AuthService);
   private router = inject(Router);
 
@@ -214,8 +217,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.authService.logout().subscribe(() => {
-      this.router.navigate(['/login']);
-    });
+    const data: ConfirmDialogData = {
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out?',
+      confirmText: 'Sign Out',
+      confirmColor: 'warn',
+    };
+    this.dialog.open(ConfirmDialogComponent, { width: '360px', data })
+      .afterClosed().subscribe(confirmed => {
+        if (!confirmed) return;
+        this.authService.logout().subscribe(() => {
+          this.router.navigate(['/login']);
+        });
+      });
   }
 }

@@ -22,8 +22,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MessageService } from '../../../core/services/message.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { Message, MessageContact } from '../../../shared/models/message.model';
 import { ComposeDialogComponent } from '../compose-dialog/compose-dialog.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-message-list',
@@ -475,6 +477,8 @@ export class MessageListComponent implements OnInit, AfterViewChecked {
 
   private messageService = inject(MessageService);
   private authService = inject(AuthService);
+  private notifications = inject(NotificationService);
+  private title = inject(Title);
   private dialog = inject(MatDialog);
 
   contacts = signal<MessageContact[]>([]);
@@ -502,6 +506,7 @@ export class MessageListComponent implements OnInit, AfterViewChecked {
   private shouldScrollToBottom = false;
 
   ngOnInit(): void {
+    this.title.setTitle('PlanHub — Messages');
     this.loadContacts();
   }
 
@@ -581,6 +586,7 @@ export class MessageListComponent implements OnInit, AfterViewChecked {
         this.thread.update(msgs => [...msgs, data]);
         this.bodyControl.setValue('');
         this.shouldScrollToBottom = true;
+        this.notifications.success('Message sent');
         // Update contact latest message
         this.contacts.update(contacts =>
           contacts.map(c =>

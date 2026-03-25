@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Title } from '@angular/platform-browser';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
@@ -381,6 +382,7 @@ interface DashboardData {
 export class DashboardComponent implements OnInit {
   private http    = inject(HttpClient);
   private router  = inject(Router);
+  private title   = inject(Title);
 
   data      = signal<DashboardData | null>(null);
   isLoading = signal(true);
@@ -388,6 +390,7 @@ export class DashboardComponent implements OnInit {
   deadlineCols = ['project_name', 'bid_due_date', 'days_remaining', 'open_scopes'];
 
   ngOnInit(): void {
+    this.title.setTitle('PlanHub — Dashboard');
     this.http.get<DashboardData>('/api/dashboard').subscribe({
       next:  (d) => { this.data.set(d); this.isLoading.set(false); },
       error: ()  => this.isLoading.set(false),

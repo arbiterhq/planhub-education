@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -11,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ProjectService } from '../../../core/services/project.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { Bid } from '../../../shared/models/bid.model';
 import { Contract } from '../../../shared/models/contract.model';
 import { Invoice } from '../../../shared/models/invoice.model';
@@ -19,6 +21,7 @@ import { getStatusLabel } from '../../../shared/utils/status.utils';
 import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 import { ProjectFormDialogComponent } from '../project-form-dialog/project-form-dialog.component';
 import { ProjectScopeDialogComponent, ScopeDialogData } from '../project-scope-dialog/project-scope-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface BidRow extends Bid {
   tradeName: string;
@@ -470,6 +473,8 @@ export class ProjectDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private projectService = inject(ProjectService);
+  private notifications = inject(NotificationService);
+  private title = inject(Title);
   private dialog = inject(MatDialog);
 
   project = signal<Project | null>(null);
@@ -512,7 +517,11 @@ export class ProjectDetailComponent implements OnInit {
   loadProject(id: number): void {
     this.loading.set(true);
     this.projectService.getProject(id).subscribe({
-      next: (res) => { this.project.set(res.data); this.loading.set(false); },
+      next: (res) => {
+        this.project.set(res.data);
+        this.loading.set(false);
+        this.title.setTitle(`PlanHub — ${res.data.name}`);
+      },
       error: () => { this.loading.set(false); this.router.navigate(['/projects']); },
     });
   }
@@ -520,7 +529,10 @@ export class ProjectDetailComponent implements OnInit {
   openEditDialog(): void {
     this.dialog.open(ProjectFormDialogComponent, { width: '640px', data: this.project() })
       .afterClosed().subscribe(result => {
-        if (result) this.loadProject(result.id);
+        if (result) {
+          this.loadProject(result.id);
+          this.notifications.success('Project updated');
+        }
       });
   }
 
@@ -528,7 +540,10 @@ export class ProjectDetailComponent implements OnInit {
     const data: ScopeDialogData = { projectId: this.project()!.id };
     this.dialog.open(ProjectScopeDialogComponent, { width: '480px', data })
       .afterClosed().subscribe(result => {
-        if (result) this.loadProject(this.project()!.id);
+        if (result) {
+          this.loadProject(this.project()!.id);
+          this.notifications.success('Scope added');
+        }
       });
   }
 
@@ -536,13 +551,28 @@ export class ProjectDetailComponent implements OnInit {
     const data: ScopeDialogData = { projectId: this.project()!.id, scope };
     this.dialog.open(ProjectScopeDialogComponent, { width: '480px', data })
       .afterClosed().subscribe(result => {
-        if (result) this.loadProject(this.project()!.id);
+        if (result) {
+          this.loadProject(this.project()!.id);
+          this.notifications.success('Scope updated');
+        }
       });
   }
 
   deleteScope(scope: ProjectScope): void {
-    if (!confirm('Delete this scope? This cannot be undone.')) return;
-    this.projectService.deleteScope(this.project()!.id, scope.id)
-      .subscribe(() => this.loadProject(this.project()!.id));
+    const data: ConfirmDialogData = {
+      title: 'Delete Scope',
+      message: 'Delete this scope? This cannot be undone.',
+      confirmText: 'Delete',
+      confirmColor: 'warn',
+    };
+    this.dialog.open(ConfirmDialogComponent, { width: '400px', data })
+      .afterClosed().subscribe(confirmed => {
+        if (!confirmed) return;
+        this.projectService.deleteScope(this.project()!.id, scope.id)
+          .subscribe(() => {
+            this.loadProject(this.project()!.id);
+            this.notifications.success('Scope deleted');
+          });
+      });
   }
 }

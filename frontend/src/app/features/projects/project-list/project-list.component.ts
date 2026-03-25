@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Subject, combineLatest, debounceTime, startWith, takeUntil } from 'rxjs';
+import { Title } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -15,9 +16,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { ProjectService } from '../../../core/services/project.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { Project } from '../../../shared/models/project.model';
 import { getStatusLabel } from '../../../shared/utils/status.utils';
 import { ProjectFormDialogComponent } from '../project-form-dialog/project-form-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-project-list',
@@ -37,6 +41,7 @@ import { ProjectFormDialogComponent } from '../project-form-dialog/project-form-
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTableModule,
+    EmptyStateComponent,
   ],
   template: `
     <div class="page-container">
@@ -70,6 +75,15 @@ import { ProjectFormDialogComponent } from '../project-form-dialog/project-form-
         <div class="spinner-container">
           <mat-spinner diameter="48"></mat-spinner>
         </div>
+      } @else if (projects().length === 0) {
+        <app-empty-state
+          icon="business"
+          title="No projects yet"
+          message="Create your first project to get started">
+          <button mat-raised-button color="primary" (click)="openNewProjectDialog()">
+            <mat-icon>add</mat-icon> New Project
+          </button>
+        </app-empty-state>
       } @else {
         <mat-table [dataSource]="projects()" class="projects-table mat-elevation-z2">
 
@@ -203,6 +217,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   private projectService = inject(ProjectService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private notifications = inject(NotificationService);
+  private title = inject(Title);
 
   projects = signal<Project[]>([]);
   loading = signal(false);
@@ -220,6 +236,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
+    this.title.setTitle('PlanHub — Projects');
     combineLatest([
       this.searchControl.valueChanges.pipe(debounceTime(300), startWith(this.searchControl.value)),
       this.statusControl.valueChanges.pipe(startWith(this.statusControl.value)),
@@ -252,17 +269,39 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   openNewProjectDialog(): void {
     this.dialog.open(ProjectFormDialogComponent, { width: '640px', data: null })
-      .afterClosed().subscribe(result => { if (result) this.loadProjects(); });
+      .afterClosed().subscribe(result => {
+        if (result) {
+          this.loadProjects();
+          this.notifications.success('Project created successfully');
+        }
+      });
   }
 
   openEditDialog(project: Project): void {
     this.dialog.open(ProjectFormDialogComponent, { width: '640px', data: project })
-      .afterClosed().subscribe(result => { if (result) this.loadProjects(); });
+      .afterClosed().subscribe(result => {
+        if (result) {
+          this.loadProjects();
+          this.notifications.success('Project updated');
+        }
+      });
   }
 
   deleteProject(project: Project): void {
-    if (!confirm(`Delete "${project.name}"? This cannot be undone.`)) return;
-    this.projectService.deleteProject(project.id).subscribe(() => this.loadProjects());
+    const data: ConfirmDialogData = {
+      title: 'Delete Project',
+      message: `Delete "${project.name}"? This cannot be undone.`,
+      confirmText: 'Delete',
+      confirmColor: 'warn',
+    };
+    this.dialog.open(ConfirmDialogComponent, { width: '400px', data })
+      .afterClosed().subscribe(confirmed => {
+        if (!confirmed) return;
+        this.projectService.deleteProject(project.id).subscribe(() => {
+          this.loadProjects();
+          this.notifications.success('Project deleted');
+        });
+      });
   }
 
   onPageChange(event: PageEvent): void {

@@ -14,9 +14,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { SubcontractorService } from '../../../core/services/subcontractor.service';
 import { TradeService } from '../../../core/services/trade.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { Subcontractor } from '../../../shared/models/subcontractor.model';
 import { Trade } from '../../../shared/models/project.model';
 import { SubcontractorFormDialogComponent } from '../subcontractor-form-dialog/subcontractor-form-dialog.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-subcontractor-list',
@@ -231,6 +233,8 @@ export class SubcontractorListComponent implements OnInit, OnDestroy {
   private tradeService = inject(TradeService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private notifications = inject(NotificationService);
+  private title = inject(Title);
 
   subcontractors = signal<Subcontractor[]>([]);
   trades = signal<Trade[]>([]);
@@ -246,6 +250,7 @@ export class SubcontractorListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
+    this.title.setTitle('PlanHub — Subcontractors');
     this.tradeService.getTrades().subscribe(res => this.trades.set(res.data));
 
     combineLatest([
@@ -280,7 +285,12 @@ export class SubcontractorListComponent implements OnInit, OnDestroy {
 
   openAddDialog(): void {
     this.dialog.open(SubcontractorFormDialogComponent, { width: '640px', data: null })
-      .afterClosed().subscribe(result => { if (result) this.loadSubcontractors(); });
+      .afterClosed().subscribe(result => {
+        if (result) {
+          this.loadSubcontractors();
+          this.notifications.success('Subcontractor added to directory');
+        }
+      });
   }
 
   onPageChange(event: PageEvent): void {
