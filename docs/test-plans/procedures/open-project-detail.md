@@ -9,25 +9,28 @@ produces: Browser on /projects/:id with detail view and tabs visible
 ### Option A: Click first project in the list
 
 ```bash
-agent-browser open http://localhost:4200/projects && \
-agent-browser wait --load networkidle && \
-agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB open http://localhost:4200/projects && \
+$AB wait --load networkidle && \
+$AB snapshot -i
 ```
 
 Then find the first project row in the snapshot and click it. The table rows are clickable — clicking the name navigates to the detail page.
 
 ```bash
-agent-browser click @ref && \
-agent-browser wait --load networkidle && \
-agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB click @ref && \
+$AB wait --load networkidle && \
+$AB snapshot -i
 ```
 
 ### Option B: Navigate directly by ID (if you know it)
 
 ```bash
-agent-browser open http://localhost:4200/projects/1 && \
-agent-browser wait --load networkidle && \
-agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB open http://localhost:4200/projects/1 && \
+$AB wait --load networkidle && \
+$AB snapshot -i
 ```
 
 ## What You'll See
@@ -41,13 +44,15 @@ agent-browser snapshot -i
 ## Switching Tabs
 
 ```bash
-agent-browser find text "Scopes" click && agent-browser wait 500 && agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB find text "Scopes" click && $AB wait 500 && $AB snapshot -i
 ```
 
 Replace "Scopes" with: "Overview", "Bids", "Contracts", "Invoices"
 
 ## Notes
 
+- Always use repo-local binary: `AB=./node_modules/.bin/agent-browser`
 - The project list table rows are clickable — clicking anywhere in the row navigates to detail
 - Default tab is "Overview"
 - Tab content loads lazily — wait briefly after switching

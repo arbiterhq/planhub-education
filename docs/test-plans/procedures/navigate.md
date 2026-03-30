@@ -9,9 +9,10 @@ produces: Browser on the target page with snapshot ready to read
 Replace `{page}` with the target path.
 
 ```bash
-agent-browser open http://localhost:4200/{page} && \
-agent-browser wait --load networkidle && \
-agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB open http://localhost:4200/{page} && \
+$AB wait --load networkidle && \
+$AB snapshot -i
 ```
 
 ## Available Pages
@@ -33,15 +34,17 @@ agent-browser snapshot -i
 If already on a page, click sidenav items instead of direct URL:
 
 ```bash
-agent-browser find text "Projects" click && \
-agent-browser wait --load networkidle && \
-agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB find text "Projects" click && \
+$AB wait --load networkidle && \
+$AB snapshot -i
 ```
 
 Sidenav items: "Dashboard", "Projects", "Subcontractors", "Bids", "Invoices", "Messages"
 
 ## Notes
 
+- Always use repo-local binary: `AB=./node_modules/.bin/agent-browser`
 - Always end navigation with `snapshot -i` so you can see what's on screen
 - If the page redirects to `/login`, the session expired — re-run login procedure
 - For detail pages, you need a valid ID from the database

@@ -1,7 +1,7 @@
 ---
 name: e2e-test
 description: Quick browser-based testing of the PlanHub app using agent-browser. Trigger when the user says "test this", "verify the app", "check if X works", "smoke test", "test what we changed", or after completing a code change.
-allowed-tools: Bash(agent-browser:*), Bash(npx agent-browser:*), Bash(cd backend*), Read, Write, Glob
+allowed-tools: Bash(./node_modules/.bin/agent-browser:*), Bash(cd backend*), Read, Write, Glob
 ---
 
 # E2E Testing with Agent-Browser
@@ -10,57 +10,69 @@ You have composable building blocks for testing PlanHub via the real browser. Us
 
 **Philosophy**: Login fast, navigate fast, then spend your time on the actual testing. Adapt to what you see on screen — don't follow rigid scripts.
 
+## Important: Binary Path & Proxy Caveats
+
+**Always use the repo-local binary**: `./node_modules/.bin/agent-browser` (never `npx agent-browser` or a global install). All commands below use `AB=./node_modules/.bin/agent-browser` as a shorthand.
+
+**Proxy caveat**: The Angular dev proxy (`frontend/proxy.conf.json`) forwards `/login` and `/logout` URLs to the backend. This means navigating directly to `http://localhost:4200/login` hits the Laravel backend (which only accepts POST), not the Angular app. To reach the Angular login page, navigate to `http://localhost:4200/` — the auth guard will redirect to `/login` client-side, bypassing the proxy.
+
 ## Core Chains (memorize these)
 
 ### Login (1 bash call)
 
 ```bash
-agent-browser open http://localhost:4200/login && \
-agent-browser wait --load networkidle && \
-agent-browser find label "Email" fill "admin@apexconstruction.com" && \
-agent-browser find label "Password" fill "password" && \
-agent-browser find text "Sign In" click && \
-agent-browser wait --url "**/dashboard"
+AB=./node_modules/.bin/agent-browser && \
+$AB open http://localhost:4200/ && \
+$AB wait --load networkidle && \
+$AB find label "Email" fill "admin@apexconstruction.com" && \
+$AB find label "Password" fill "password" && \
+$AB find text "Sign In" click && \
+$AB wait --load networkidle
 ```
+
+Note: Opens `/` not `/login` — the auth guard redirects client-side, avoiding the proxy. Uses `wait --load networkidle` (not `wait --url`) to avoid race conditions where the navigation completes before the wait starts.
 
 ### Navigate to any page (1 bash call)
 
 Replace `{page}` with: `dashboard`, `projects`, `subcontractors`, `bids`, `bids/invite`, `invoices`, `messages`
 
 ```bash
-agent-browser open http://localhost:4200/{page} && \
-agent-browser wait --load networkidle && \
-agent-browser snapshot -i
+AB=./node_modules/.bin/agent-browser && \
+$AB open http://localhost:4200/{page} && \
+$AB wait --load networkidle && \
+$AB snapshot -i
 ```
 
 ### Quick page health check (1 bash call)
 
 ```bash
-agent-browser get url && agent-browser get title && agent-browser snapshot -ic
+AB=./node_modules/.bin/agent-browser && \
+$AB get url && $AB get title && $AB snapshot -ic
 ```
 
 ## Speed Rules
 
-1. **Use `find` for known elements** — `find label "Email" fill "x"` is one call, no snapshot needed
+1. **Use `find` for known elements** — `$AB find label "Email" fill "x"` is one call, no snapshot needed
 2. **Use `snapshot -i` when exploring** — when you need to see what's on the page
 3. **Chain with `&&`** — batch 5-8 commands per bash call
-4. **Suppress noise** — redirect intermediate output: `agent-browser open URL >/dev/null 2>&1 && ...`
-5. **Screenshot on failure** — `agent-browser screenshot` captures evidence
+4. **Suppress noise** — redirect intermediate output: `$AB open URL >/dev/null 2>&1 && ...`
+5. **Screenshot on failure** — `$AB screenshot` captures evidence
 
 ## Semantic Locators Quick Reference
 
 ```bash
-agent-browser find label "Email" fill "value"          # mat-form-field label
-agent-browser find text "Sign In" click                # button/link text
-agent-browser find placeholder "Search by name…" fill "query"  # placeholder text
-agent-browser find role button click --name "Save"     # ARIA role + name
+AB=./node_modules/.bin/agent-browser
+$AB find label "Email" fill "value"          # mat-form-field label
+$AB find text "Sign In" click                # button/link text
+$AB find placeholder "Search by name…" fill "query"  # placeholder text
+$AB find role button click --name "Save"     # ARIA role + name
 ```
 
 ## Testing Protocol
 
 When the user asks you to test something:
 
-1. **Login** — run the login chain (1 call). Skip if already logged in (check with `agent-browser get url`).
+1. **Login** — run the login chain (1 call). Skip if already logged in (check with `$AB get url`).
 2. **Navigate** — go to the relevant page (1 call, snapshot at end).
 3. **Read the snapshot** — understand what's on screen from the accessibility tree.
 4. **Improvise** — interact with the page based on what the user asked. Use `find` for known elements, `@refs` from snapshots for discovered ones.
@@ -133,7 +145,7 @@ produces: What state the browser is in after running this
 
 ## Commands
 
-(bash chain here)
+(bash chain here — always use AB=./node_modules/.bin/agent-browser)
 
 ## Notes
 

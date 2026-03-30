@@ -12,7 +12,8 @@
       "NotebookEdit",
       "mcp__chrome-devtools__*",
       "Bash(npx agent-browser:*)",
-      "Bash(agent-browser:*)"
+      "Bash(agent-browser:*)",
+      "Bash(./node_modules/.bin/agent-browser:*)"
     ],
     "deny": []
   },

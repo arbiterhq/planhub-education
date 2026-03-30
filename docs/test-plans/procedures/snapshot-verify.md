@@ -7,59 +7,50 @@ produces: Diagnostic output about current page state
 ## Quick Health Check (1 bash call)
 
 ```bash
-agent-browser get url && agent-browser get title && agent-browser snapshot -ic
+AB=./node_modules/.bin/agent-browser && \
+$AB get url && $AB get title && $AB snapshot -ic
 ```
 
 Reports: current URL, page title, compact interactive element tree.
 
 ## Verify Specific Conditions
 
-**Check URL:**
 ```bash
-agent-browser get url
-```
+AB=./node_modules/.bin/agent-browser
 
-**Check page title:**
-```bash
-agent-browser get title
-```
+# Check URL
+$AB get url
 
-**Check if element exists by text:**
-```bash
-agent-browser snapshot -i
-```
-Then search the output for the expected text.
+# Check page title
+$AB get title
 
-**Check element text content:**
-```bash
-agent-browser get text @ref
-```
+# Check if element exists (search snapshot output for expected text)
+$AB snapshot -i
 
-**Screenshot for evidence:**
-```bash
-agent-browser screenshot
-```
+# Check element text content
+$AB get text @ref
 
-**Full-page screenshot:**
-```bash
-agent-browser screenshot --full
-```
+# Screenshot for evidence
+$AB screenshot
 
-**Annotated screenshot (numbered element labels):**
-```bash
-agent-browser screenshot --annotate
+# Full-page screenshot
+$AB screenshot --full
+
+# Annotated screenshot (numbered element labels)
+$AB screenshot --annotate
 ```
 
 ## Failure Pattern
 
 When something looks wrong:
-1. `agent-browser screenshot` — capture what the page looks like
-2. `agent-browser snapshot -i` — get the element tree for debugging
+1. `$AB screenshot` — capture what the page looks like
+2. `$AB snapshot -i` — get the element tree for debugging
 3. Report the URL, what you expected, and what you found
 4. Include the screenshot path so the user can inspect visually
 
 ## Notes
 
+- Always use repo-local binary: `AB=./node_modules/.bin/agent-browser`
 - `snapshot -ic` = interactive + compact (less output, faster to scan)
 - `snapshot -i` = full interactive tree (more detail when debugging)
-- Screenshots go to a temp directory by default; include the path in your report
+- Screenshots go to `~/.agent-browser/tmp/screenshots/` by default; include the path in your report

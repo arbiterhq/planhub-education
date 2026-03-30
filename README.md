@@ -46,17 +46,47 @@ This application simulates PlanHub's core workflow from a general contractor's p
     php artisan key:generate
     touch database/database.sqlite
     php artisan migrate:fresh --seed
-    php artisan serve
 
-The API will be available at http://localhost:8000
+### 3. Install root dependencies (PM2, browser tools)
 
-### 3. Set up the frontend
-
-    cd frontend
+    cd ..
     npm install
-    ng serve
 
-The app will be available at http://localhost:4200
+### 4. Start the dev servers
+
+Both servers are managed via PM2:
+
+    ./dev.sh start
+
+This starts:
+- **Backend** at http://localhost:8000 (Laravel via `php artisan serve`)
+- **Frontend** at http://localhost:4200 (Angular via `ng serve`, proxied to backend)
+
+Other commands:
+
+    ./dev.sh stop          # Stop all services
+    ./dev.sh restart       # Restart all services
+    ./dev.sh status        # Show service status
+    ./dev.sh logs          # Tail logs from all services
+    ./dev.sh logs:back     # Tail backend logs only
+    ./dev.sh logs:front    # Tail frontend logs only
+    ./dev.sh reset-db      # Reset database to seed state
+
+#### Managing individual processes
+
+    # Restart just the backend or frontend
+    ./node_modules/.bin/pm2 restart backend
+    ./node_modules/.bin/pm2 restart frontend
+
+    # View logs for one process
+    ./node_modules/.bin/pm2 logs backend --lines 100
+
+#### Running without PM2
+
+If you prefer manual control:
+
+    cd backend && php artisan serve           # Terminal 1
+    cd frontend && ng serve                   # Terminal 2
 
 ### 4. Log in
 

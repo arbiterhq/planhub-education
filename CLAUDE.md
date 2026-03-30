@@ -67,6 +67,8 @@ planhub-education/
 │   ├── init/                  # Individual task files (01-15)
 │   └── test-plans/
 │       └── procedures/        # Composable agent-browser building blocks
+├── ecosystem.config.cjs       # PM2 process definitions (backend + frontend)
+├── dev.sh                     # Dev server management (start/stop/restart/logs)
 ├── run-tasks.sh               # Idempotent task runner
 └── CLAUDE.md                  # This file
 ```
@@ -115,16 +117,55 @@ planhub-education/
 
 ## Running the App
 
+Both servers are managed via **PM2** (local install in node_modules):
+
 ```bash
-# Backend
-cd backend && php artisan serve           # http://localhost:8000
-
-# Frontend (separate terminal)
-cd frontend && ng serve                   # http://localhost:4200 (proxied to :8000)
-
-# Reset database
-cd backend && php artisan migrate:fresh --seed
+./dev.sh start         # Start backend + frontend (deletes stale procs first)
+./dev.sh stop          # Stop all services
+./dev.sh restart       # Restart all services
+./dev.sh status        # Show service status
+./dev.sh logs          # Tail all logs (last 50 lines)
+./dev.sh logs:back     # Tail backend logs only
+./dev.sh logs:front    # Tail frontend logs only
+./dev.sh reset-db      # Run migrate:fresh --seed
 ```
+
+- **Backend**: http://localhost:8000 (PHP artisan serve via PM2)
+- **Frontend**: http://localhost:4200 (Angular ng serve via PM2, proxied to :8000)
+- **Config**: `ecosystem.config.cjs` defines both processes
+- **PM2 binary**: `./node_modules/.bin/pm2` (repo-local, no global install needed)
+
+### Managing Individual Processes
+
+```bash
+# Restart just the backend (e.g., after changing PHP code that isn't hot-reloaded)
+./node_modules/.bin/pm2 restart backend
+
+# Restart just the frontend
+./node_modules/.bin/pm2 restart frontend
+
+# Stop one service without affecting the other
+./node_modules/.bin/pm2 stop backend
+./node_modules/.bin/pm2 start backend
+
+# View logs for a single process
+./node_modules/.bin/pm2 logs backend --lines 100
+./node_modules/.bin/pm2 logs frontend --lines 100
+```
+
+### Worktree / Parallel Development Sessions
+
+When using `claude --worktree` for parallel feature branches, each worktree has its own copy of the repo but **shares the same PM2 daemon**. To avoid port conflicts:
+
+1. **Don't run `./dev.sh start` from a worktree** — the main checkout's servers serve all worktrees since they share the same SQLite database and compiled frontend.
+2. If you need isolated servers per worktree (e.g., testing different backend branches simultaneously), use different ports:
+   ```bash
+   # In the worktree, start manually on alternate ports
+   cd backend && php artisan serve --port=8001 &
+   cd frontend && npx ng serve --port 4201 --proxy-config proxy.conf.json &
+   ```
+   You'll also need to update `proxy.conf.json` in the worktree to point to the alternate backend port.
+3. **Database**: All worktrees share `backend/database/database.sqlite` from the main checkout unless you create a separate SQLite file in the worktree's backend directory.
 
 ## Claude Code Tooling
 
