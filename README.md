@@ -82,6 +82,55 @@ To reset the database to its original state:
     cd backend
     php artisan migrate:fresh --seed
 
+## Claude Code Setup
+
+This project includes configuration for [Claude Code](https://claude.ai/claude-code) with browser automation tools pre-configured.
+
+### What's included
+
+| Tool | Type | Purpose |
+|------|------|---------|
+| [Chrome DevTools MCP](https://github.com/nichochar/chrome-devtools-mcp) | MCP Server | 30 browser tools via Chrome DevTools Protocol — click, fill, navigate, screenshot, network inspection, performance tracing |
+| [agent-browser](https://github.com/vercel-labs/agent-browser) | Skill (CLI) | Headless browser automation CLI — navigate, snapshot, interact with element refs, capture screenshots |
+
+### Prerequisites
+
+- **Claude Code** CLI installed ([installation guide](https://docs.anthropic.com/en/docs/claude-code/overview))
+- **Google Chrome** (stable) — required by both tools
+- **Node.js 20.19+** — required by chrome-devtools-mcp
+
+### Quick start
+
+```bash
+# 1. Install project dependencies (includes both browser tools)
+npm install
+
+# 2. (Optional) Install Chrome for agent-browser if not already available
+npx agent-browser install
+
+# 3. Start Claude Code — settings and permissions are auto-loaded from .claude/
+claude
+```
+
+### How it works
+
+- **`.claude/settings.json`** — Configures the Chrome DevTools MCP server and grants permissions for all tools (file I/O, shell, web access, MCP tools, agent-browser CLI)
+- **`.claude/skills/agent-browser/SKILL.md`** — Skill definition that teaches Claude when and how to use the agent-browser CLI
+- Both `chrome-devtools-mcp` and `agent-browser` are installed as dev dependencies in the root `package.json`, so `npx` resolves them locally
+
+### Usage examples
+
+Once inside Claude Code, you can ask things like:
+
+- "Open http://localhost:4200 and take a screenshot of the dashboard"
+- "Fill out the login form with the demo credentials and verify the redirect"
+- "Run a Lighthouse audit on the projects page"
+- "Navigate to the bids page, snapshot the table, and extract the bid amounts"
+
+### Permissions
+
+The project `.claude/settings.json` grants full permissions for all tools. If you want to restrict access, edit `.claude/settings.json` and remove entries from the `permissions.allow` array.
+
 ## Project Structure
 
     planhub-education/

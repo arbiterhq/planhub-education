@@ -124,6 +124,33 @@ cd frontend && ng serve                   # http://localhost:4200 (proxied to :8
 cd backend && php artisan migrate:fresh --seed
 ```
 
+## Claude Code Tooling
+
+### MCP Servers
+
+**Chrome DevTools MCP** — Configured in `.claude/settings.json`. Provides 30 browser automation tools (click, fill, navigate, screenshot, network inspection, performance tracing, etc.) via Chrome DevTools Protocol. The MCP server launches Chrome automatically when tools are first invoked.
+
+### Skills
+
+**agent-browser** — Skill defined in `.claude/skills/agent-browser/SKILL.md`. A headless browser CLI for AI agents. Use for navigating pages, filling forms, clicking buttons, taking screenshots, and extracting data. Core workflow: `open` → `snapshot -i` → interact with `@refs` → re-snapshot.
+
+### Permissions
+
+Project-level permissions in `.claude/settings.json` grant full access to:
+- All file operations (Read, Edit, Write, Glob, Grep)
+- Shell execution (Bash)
+- Web access (WebFetch, WebSearch)
+- All Chrome DevTools MCP tools (`mcp__chrome-devtools__*`)
+- agent-browser CLI (`Bash(agent-browser:*)`, `Bash(npx agent-browser:*)`)
+
+### Dev Dependencies
+
+Both tools are installed as project dev dependencies (see root `package.json`):
+- `agent-browser` — browser automation CLI
+- `chrome-devtools-mcp` — Chrome DevTools MCP server
+
+Run `npm install` at the project root to install them locally.
+
 ## Task Execution
 
 Tasks in `docs/init/` are numbered 00-15 and designed to be executed sequentially via `run-tasks.sh`. Task 00 installs PHP/Composer; tasks 01-15 build the app. Each task file contains complete instructions. The runner script handles git commits and idempotency — tasks already committed (checked via `[Task XX]` in git log) are skipped on re-run.
