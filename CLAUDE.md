@@ -64,7 +64,9 @@ planhub-education/
 │   └── angular.json
 ├── docs/
 │   ├── init.md                # Task index
-│   └── init/                  # Individual task files (01-15)
+│   ├── init/                  # Individual task files (01-15)
+│   └── test-plans/
+│       └── procedures/        # Composable agent-browser building blocks
 ├── run-tasks.sh               # Idempotent task runner
 └── CLAUDE.md                  # This file
 ```
@@ -133,6 +135,8 @@ cd backend && php artisan migrate:fresh --seed
 ### Skills
 
 **agent-browser** — Skill defined in `.claude/skills/agent-browser/SKILL.md`. A headless browser CLI for AI agents. Use for navigating pages, filling forms, clicking buttons, taking screenshots, and extracting data. Core workflow: `open` → `snapshot -i` → interact with `@refs` → re-snapshot.
+
+**e2e-test** — Skill defined in `.claude/skills/e2e-test/SKILL.md`. Quick browser-based testing using composable building blocks. Invoke when asked to "test this", "verify the app", or "check if X works". Core chains for login (1 bash call) and navigation (1 bash call) are inline in the skill. Additional procedures live in `docs/test-plans/procedures/*.md` and grow over time as useful patterns are discovered.
 
 ### Permissions
 
